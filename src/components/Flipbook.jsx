@@ -89,7 +89,7 @@ export default function Flipbook() {
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-4xl">
+        <div className="relative mx-auto w-full max-w-5xl flex items-center justify-center">
           <Book pages={pages} pageIndex={pageIndex} setPageIndex={setPageIndex} />
 
           <div className="mt-6 flex justify-center gap-2 md:hidden">
@@ -107,34 +107,33 @@ export default function Flipbook() {
 }
 
 function Book({ pages, pageIndex, setPageIndex }) {
-  // Visual 3D book with stack of pages; left is previous, right is next
   return (
-    <div className="relative mx-auto h-[520px] w-full max-w-4xl select-none">
-      <div className="absolute inset-0 [perspective:2000px]">
-        <div className="absolute left-0 top-0 h-full w-1/2 rounded-l-xl border border-white/10 bg-neutral-900/70 shadow-[inset_-12px_0_40px_rgba(0,0,0,0.4)]" />
-        <div className="absolute right-0 top-0 h-full w-1/2 rounded-r-xl border border-white/10 bg-neutral-850/60 shadow-[inset_12px_0_40px_rgba(0,0,0,0.4)]" />
+    <div className="relative mx-auto h-[560px] w-full max-w-5xl select-none flex items-center justify-center">
+      {/* Centered book base */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/10 bg-neutral-900/70 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.6)]" />
+      </div>
 
+      <div className="absolute inset-0 [perspective:1600px] [perspective-origin:center]">
         {/* Static center crease */}
-        <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/10" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-px -translate-x-1/2 -translate-y-1/2 bg-white/10" />
 
-        {/* Pages */}
         {pages.map((p, i) => {
           const isLeft = i <= pageIndex
           const depth = i
-          const z = 100 - depth
+          const z = 200 - depth
 
-          // Rotation: pages up to current index are flipped to the left (-180deg -> -2deg for slight spread)
-          // pages after current index rest on the right (0deg)
-          const rotation = i <= pageIndex ? -178 + Math.min(176, i * 2) : 0
+          // Keep a clean, centered rotation. Flipped pages go left, others stay right.
+          const rotation = i <= pageIndex ? -176 : 0
 
           return (
             <div
               key={i}
-              className="absolute left-1/2 top-1/2 h-[460px] w-[340px] -translate-y-1/2 [transform-style:preserve-3d] origin-left will-change-transform"
+              className="absolute left-1/2 top-1/2 h-[500px] w-[340px] md:w-[360px] lg:w-[380px] -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d] origin-left will-change-transform"
               style={{
                 zIndex: z,
-                transform: `translateX(-50%) rotateY(${rotation}deg)`,
-                transition: 'transform 700ms cubic-bezier(0.22, 1, 0.36, 1)',
+                transform: `translate(-50%, -50%) rotateY(${rotation}deg)`,
+                transition: 'transform 700ms cubic-bezier(0.22, 1, 0.36, 1)'
               }}
             >
               {/* Front face */}
@@ -147,7 +146,7 @@ function Book({ pages, pageIndex, setPageIndex }) {
                   <button
                     aria-label="Next page"
                     onClick={() => setPageIndex(prev => Math.min(pages.length - 1, prev + 1))}
-                    className="absolute right-0 top-0 h-full w-10 group"
+                    className="absolute right-0 top-0 h-full w-10"
                   >
                     <span className="pointer-events-none absolute inset-y-0 right-0 w-px bg-neutral-300/50" />
                   </button>
@@ -160,8 +159,7 @@ function Book({ pages, pageIndex, setPageIndex }) {
                 {/* Left edge click area: prev */}
                 {i === pageIndex + 1 && (
                   <button
-                    aria-label=
-                      "Previous page"
+                    aria-label="Previous page"
                     onClick={() => setPageIndex(prev => Math.max(0, prev - 1))}
                     className="absolute left-0 top-0 h-full w-10"
                   >
