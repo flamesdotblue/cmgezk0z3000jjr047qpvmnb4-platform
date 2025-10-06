@@ -89,7 +89,7 @@ export default function Flipbook() {
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-5xl flex items-center justify-center">
+        <div className="relative w-full flex flex-col items-center">
           <Book pages={pages} pageIndex={pageIndex} setPageIndex={setPageIndex} />
 
           <div className="mt-6 flex justify-center gap-2 md:hidden">
@@ -107,69 +107,72 @@ export default function Flipbook() {
 }
 
 function Book({ pages, pageIndex, setPageIndex }) {
+  // Book stage centered container
   return (
-    <div className="relative mx-auto h-[560px] w-full max-w-5xl select-none flex items-center justify-center">
-      {/* Centered book base */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/10 bg-neutral-900/70 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.6)]" />
-      </div>
+    <div className="relative w-full flex justify-center">
+      {/* Stage has fixed intrinsic width; this guarantees perfect centering */}
+      <div className="relative h-[520px] w-[720px] sm:w-[740px] md:w-[780px] lg:w-[820px]">
+        {/* Stage background for depth */}
+        <div className="absolute inset-0 rounded-xl border border-white/10 bg-neutral-900/60 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.6)]" />
 
-      <div className="absolute inset-0 [perspective:1600px] [perspective-origin:center]">
-        {/* Static center crease */}
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-px -translate-x-1/2 -translate-y-1/2 bg-white/10" />
+        {/* 3D space */}
+        <div className="absolute inset-0 [perspective:1600px]">
+          {/* Static center crease */}
+          <div className="absolute left-1/2 top-1/2 h-[460px] w-px -translate-x-1/2 -translate-y-1/2 bg-white/10" />
 
-        {pages.map((p, i) => {
-          const isLeft = i <= pageIndex
-          const depth = i
-          const z = 200 - depth
+          {pages.map((p, i) => {
+            const flipped = i <= pageIndex
+            const depth = i
+            const z = 200 - depth
+            const rotation = flipped ? -176 : 0
+            // slight spread for stacked pages
+            const spread = Math.min(i, 6) * 0.6
 
-          // Keep a clean, centered rotation. Flipped pages go left, others stay right.
-          const rotation = i <= pageIndex ? -176 : 0
+            return (
+              <div
+                key={i}
+                className="absolute left-1/2 top-1/2 h-[460px] w-[340px] sm:w-[360px] -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d] origin-left will-change-transform"
+                style={{
+                  zIndex: z,
+                  transform: `translate(-50%, -50%) rotateY(${rotation}deg) translateZ(${spread}px)`,
+                  transition: 'transform 700ms cubic-bezier(0.22, 1, 0.36, 1)'
+                }}
+              >
+                {/* Front face */}
+                <div className={`absolute inset-0 rounded-md border ${flipped ? 'rounded-l-md' : 'rounded-r-md'} overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-50 text-neutral-900 [backface-visibility:hidden]`}>
+                  <PageInner title={p.title} index={i}>
+                    {p.content}
+                  </PageInner>
+                  {/* Right edge click: next */}
+                  {i === pageIndex && (
+                    <button
+                      aria-label="Next page"
+                      onClick={() => setPageIndex(prev => Math.min(pages.length - 1, prev + 1))}
+                      className="absolute right-0 top-0 h-full w-10"
+                    >
+                      <span className="pointer-events-none absolute inset-y-0 right-0 w-px bg-neutral-300/50" />
+                    </button>
+                  )}
+                </div>
 
-          return (
-            <div
-              key={i}
-              className="absolute left-1/2 top-1/2 h-[500px] w-[340px] md:w-[360px] lg:w-[380px] -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d] origin-left will-change-transform"
-              style={{
-                zIndex: z,
-                transform: `translate(-50%, -50%) rotateY(${rotation}deg)`,
-                transition: 'transform 700ms cubic-bezier(0.22, 1, 0.36, 1)'
-              }}
-            >
-              {/* Front face */}
-              <div className={`absolute inset-0 rounded-md border ${isLeft ? 'rounded-l-md' : 'rounded-r-md'} overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-50 text-neutral-900 [backface-visibility:hidden]`}>
-                <PageInner title={p.title} index={i} side="front">
-                  {p.content}
-                </PageInner>
-                {/* Right edge click area: next */}
-                {i === pageIndex && (
-                  <button
-                    aria-label="Next page"
-                    onClick={() => setPageIndex(prev => Math.min(pages.length - 1, prev + 1))}
-                    className="absolute right-0 top-0 h-full w-10"
-                  >
-                    <span className="pointer-events-none absolute inset-y-0 right-0 w-px bg-neutral-300/50" />
-                  </button>
-                )}
+                {/* Back face */}
+                <div className="absolute inset-0 rounded-md border border-neutral-200/80 bg-gradient-to-br from-neutral-100 to-neutral-50 text-neutral-900 [transform:rotateY(180deg)] [backface-visibility:hidden]">
+                  <PageBack index={i} />
+                  {/* Left edge click: prev */}
+                  {i === pageIndex + 1 && (
+                    <button
+                      aria-label="Previous page"
+                      onClick={() => setPageIndex(prev => Math.max(0, prev - 1))}
+                      className="absolute left-0 top-0 h-full w-10"
+                    >
+                      <span className="pointer-events-none absolute inset-y-0 left-0 w-px bg-neutral-300/50" />
+                    </button>
+                  )}
+                </div>
               </div>
-
-              {/* Back face */}
-              <div className="absolute inset-0 rounded-md border border-neutral-200/80 bg-gradient-to-br from-neutral-100 to-neutral-50 text-neutral-900 [transform:rotateY(180deg)] [backface-visibility:hidden]">
-                <PageBack index={i} />
-                {/* Left edge click area: prev */}
-                {i === pageIndex + 1 && (
-                  <button
-                    aria-label="Previous page"
-                    onClick={() => setPageIndex(prev => Math.max(0, prev - 1))}
-                    className="absolute left-0 top-0 h-full w-10"
-                  >
-                    <span className="pointer-events-none absolute inset-y-0 left-0 w-px bg-neutral-300/50" />
-                  </button>
-                )}
-              </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </div>
   )

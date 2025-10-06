@@ -33,7 +33,6 @@ export default function Hero() {
 }
 
 function DecorativeCanvas() {
-  // Lightweight animated decorative shapes to evoke a 3D/creative vibe without external deps
   return (
     <div className="absolute inset-0">
       <div className="absolute left-8 top-8 h-24 w-24 rounded-xl bg-gradient-to-br from-cyan-400/60 to-blue-500/60 backdrop-blur-sm animate-pulse" />
