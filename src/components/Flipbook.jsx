@@ -107,31 +107,28 @@ export default function Flipbook() {
 }
 
 function Book({ pages, pageIndex, setPageIndex }) {
-  // Book stage centered container
+  // Perfect centering with responsive stage that never exceeds viewport
   return (
     <div className="relative w-full flex justify-center">
-      {/* Stage has fixed intrinsic width; this guarantees perfect centering */}
-      <div className="relative h-[520px] w-[720px] sm:w-[740px] md:w-[780px] lg:w-[820px]">
-        {/* Stage background for depth */}
+      <div className="relative w-full max-w-[92vw] md:max-w-[860px] h-[min(120vw,560px)] md:h-[560px]">
+        {/* Stage background */}
         <div className="absolute inset-0 rounded-xl border border-white/10 bg-neutral-900/60 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.6)]" />
 
         {/* 3D space */}
-        <div className="absolute inset-0 [perspective:1600px]">
-          {/* Static center crease */}
-          <div className="absolute left-1/2 top-1/2 h-[460px] w-px -translate-x-1/2 -translate-y-1/2 bg-white/10" />
+        <div className="absolute inset-0 [perspective:1600px] [perspective-origin:center]">
+          {/* Crease */}
+          <div className="absolute left-1/2 top-1/2 h-[80%] w-px -translate-x-1/2 -translate-y-1/2 bg-white/10" />
 
           {pages.map((p, i) => {
             const flipped = i <= pageIndex
-            const depth = i
-            const z = 200 - depth
+            const z = 200 - i
             const rotation = flipped ? -176 : 0
-            // slight spread for stacked pages
             const spread = Math.min(i, 6) * 0.6
 
             return (
               <div
                 key={i}
-                className="absolute left-1/2 top-1/2 h-[460px] w-[340px] sm:w-[360px] -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d] origin-left will-change-transform"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[44%] max-w-[380px] h-[80%] md:h-[500px] [transform-style:preserve-3d] origin-left will-change-transform"
                 style={{
                   zIndex: z,
                   transform: `translate(-50%, -50%) rotateY(${rotation}deg) translateZ(${spread}px)`,
@@ -143,7 +140,6 @@ function Book({ pages, pageIndex, setPageIndex }) {
                   <PageInner title={p.title} index={i}>
                     {p.content}
                   </PageInner>
-                  {/* Right edge click: next */}
                   {i === pageIndex && (
                     <button
                       aria-label="Next page"
@@ -158,7 +154,6 @@ function Book({ pages, pageIndex, setPageIndex }) {
                 {/* Back face */}
                 <div className="absolute inset-0 rounded-md border border-neutral-200/80 bg-gradient-to-br from-neutral-100 to-neutral-50 text-neutral-900 [transform:rotateY(180deg)] [backface-visibility:hidden]">
                   <PageBack index={i} />
-                  {/* Left edge click: prev */}
                   {i === pageIndex + 1 && (
                     <button
                       aria-label="Previous page"
